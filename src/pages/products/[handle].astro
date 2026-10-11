@@ -5,12 +5,13 @@ import Layout from '../../layouts/Layout.astro';
 import { commerce } from '../../lib/commerce';
 import catalog from '../../data/mock-catalog.json';
 
-export async function getStaticPaths() {
-  const products = await commerce.listProducts();
-  return products.map((p) => ({ params: { handle: p.handle }, props: { product: p } }));
+const { handle } = Astro.params;
+const product = (Astro.props.product as any) ?? (handle ? await commerce.getProduct(handle) : null);
+
+if (!product) {
+  return Astro.redirect('/');
 }
 
-const { product } = Astro.props;
 const p = product as any;
 const meta = p.meta ?? {};
 const house = (catalog.collections as any[]).find((c) => c.handle === product.collectionHandles[0]);

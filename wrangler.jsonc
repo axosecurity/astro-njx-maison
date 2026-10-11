@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astro-njx-maison",
+  "compatibility_date": "2026-10-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "5a04198a9a634eb2a67226930a5a6a62"
+    }
+  ]
+}
