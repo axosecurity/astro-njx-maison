@@ -552,12 +552,21 @@ const clientData = JSON.stringify({
       (window as any).MAISON_PATRONS = PATRONS;
       const authModal = $('[data-auth-modal]');
       const openAuth = () => { closeAll(); authModal.classList.add('open'); paintAuth(); };
-      function redirectToCentralAuth(provider?: string) {
-        const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
-        if (provider) {
-          window.location.href = `https://auth.conversora.io/api/auth/sign-in/social?provider=${provider}&callbackURL=${callbackUrl}`;
-        } else {
-          window.location.href = authClient.getSignInUrl({ storeName: 'Maison Archive' });
+      async function redirectToCentralAuth(provider?: string) {
+        try {
+          const signInUrl = await authClient.getSignInUrl({ storeName: 'Maison Archive' });
+          if (provider) {
+            const parsed = new URL(signInUrl);
+            const dpopJkt = parsed.searchParams.get('dpop_jkt') || '';
+            const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback?dpop_jkt=${encodeURIComponent(dpopJkt)}`);
+            window.location.href = `https://auth.conversora.io/api/auth/sign-in/social?provider=${provider}&callbackURL=${callbackUrl}`;
+          } else {
+            window.location.href = signInUrl;
+          }
+        } catch (e) {
+          console.error('Failed to resolve central auth URL:', e);
+          const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
+          window.location.href = `https://auth.conversora.io/signin?callbackURL=${callbackUrl}&store=Maison%20Archive`;
         }
       }
 

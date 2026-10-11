@@ -42,13 +42,23 @@ import Layout from '../../layouts/Layout.astro';
         return;
       }
 
-      if (!code) {
+      // Check for direct access_token in URL hash fragment (#access_token=...)
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const directToken = hashParams.get('access_token');
+      const expiresIn = parseInt(hashParams.get('expires_in') || '2592000', 10);
+
+      if (!directToken && !code) {
         window.location.href = '/';
         return;
       }
 
       try {
-        const session = await authClient.handleCallback(code, state);
+        let session;
+        if (directToken) {
+          session = await authClient.handleDirectToken(directToken, expiresIn);
+        } else {
+          session = await authClient.handleCallback(code!, state);
+        }
 
         const newPatron: PatronSession = {
           id: session.user.id,
@@ -64,7 +74,8 @@ import Layout from '../../layouts/Layout.astro';
 
         patron.set(newPatron);
 
-        // Redirect to account dashboard
+        // Clean URL fragment and redirect to account dashboard
+        history.replaceState(null, '', '/account');
         window.location.href = '/account';
       } catch (err: any) {
         console.error('Authentication exchange error:', err);

@@ -278,12 +278,44 @@ export class ConversoraAuthClient {
 
   /**
    * Returns the direct redirection URL to centralized auth.conversora.io/signin
+   * Automatically embeds device RFC 7638 dpop_jkt public thumbprint
    */
-  getSignInUrl(options: { returnPath?: string; storeName?: string } = {}): string {
+  async getSignInUrl(options: { returnPath?: string; storeName?: string } = {}): Promise<string> {
+    const keyRecord = await this.getOrCreateKeyPair();
     const callbackUrl = encodeURIComponent(this.redirectUri);
     const store = encodeURIComponent(options.storeName || this.tenantId);
     const origin = typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : '';
-    return `${this.authServerUrl}/signin?origin=${origin}&callbackURL=${callbackUrl}&store=${store}&tenantId=${this.tenantId}`;
+    return `${this.authServerUrl}/signin?origin=${origin}&callbackURL=${callbackUrl}&store=${store}&tenantId=${this.tenantId}&dpop_jkt=${encodeURIComponent(keyRecord.jkt)}`;
+  }
+
+  /**
+   * Direct token ingestion from URL hash fragment (#access_token=...)
+   */
+  async handleDirectToken(accessToken: string, expiresIn = 2592000): Promise<StoredSession> {
+    const claims = this.decodeJwtClaims(accessToken);
+
+    const session: StoredSession = {
+      tokenType: 'DPoP',
+      accessToken,
+      expiresAt: Date.now() + expiresIn * 1000,
+      scope: claims.scope || 'catalog:read cart:write orders:read profile:write',
+      user: {
+        id: claims.sub || 'usr_unknown',
+        name: claims.u_name || 'Patron',
+        emailMasked: claims.u_email_masked || '',
+        tier: claims.u_tier || 'standard',
+        currency: claims.u_curr || 'BDT',
+        tenantId: claims.tenant_id || this.tenantId,
+        points: claims.u_pts || 0,
+      },
+    };
+
+    await idbPut(STORE_SESSIONS, {
+      ...session,
+      tenantId: this.tenantId,
+    });
+
+    return session;
   }
 
   /**
@@ -317,9 +349,12 @@ export class ConversoraAuthClient {
     const tokenUrl = `${this.authServerUrl}/oauth/token`;
     const dpopProof = await this.createDPoPProof('POST', tokenUrl);
 
+    // Strip HMAC signature if code contains cookie format (.signature)
+    const cleanCode = code.split('.')[0];
+
     const bodyParams = new URLSearchParams({
       grant_type: 'authorization_code',
-      code,
+      code: cleanCode,
       redirect_uri: this.redirectUri,
       client_id: this.tenantId,
     });
