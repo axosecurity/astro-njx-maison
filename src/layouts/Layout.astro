@@ -237,28 +237,39 @@ const clientData = JSON.stringify({
     <div data-auth-modal class="fixed inset-0 z-[60] hidden items-start justify-center overflow-y-auto bg-[oklch(0.22_0.006_0/0.46)] p-0 sm:px-5 sm:pb-5 sm:pt-[8vh] [&.open]:flex">
       <div class="anim-fade flex min-h-full w-full flex-col gap-5 border-0 bg-card p-4 pt-6 sm:min-h-0 sm:w-[min(440px,100%)] sm:border sm:border-rule sm:p-[clamp(24px,4vw,36px)]">
         <div class="flex items-baseline gap-4">
-          <span data-auth-meta class="eti text-acc"></span>
+          <span data-auth-meta class="eti text-acc">Conversora Centralized Auth</span>
           <span class="flex-1"></span>
           <button data-auth-close class="cursor-pointer font-mono text-[12px] text-soft">✕</button>
         </div>
         <h2 data-auth-title class="font-sf m-0 text-[27px]">Patron sign-in</h2>
-        <label data-auth-arms class="hidden flex-col gap-[7px] [&.show]:flex">
-          <span class="eti text-faint">Arms or family name</span>
-          <input data-af="arms" class="w-full rounded-[2px] border border-rule bg-transparent px-3 py-[11px] text-[14px] text-ink outline-none focus:border-faint" />
-        </label>
-        <label class="flex flex-col gap-[7px]">
-          <span class="eti text-faint">Registered address</span>
-          <input data-af="email" type="email" placeholder="you@example.com" class="w-full rounded-[2px] border border-rule bg-transparent px-3 py-[11px] text-[14px] text-ink outline-none focus:border-faint" />
-        </label>
-        <label class="flex flex-col gap-[7px]">
-          <span class="eti text-faint">Passphrase</span>
-          <input data-af="pass" type="password" class="w-full rounded-[2px] border border-rule bg-transparent px-3 py-[11px] text-[14px] text-ink outline-none focus:border-faint" />
-        </label>
-        <p data-auth-error class="m-0 hidden text-[13px] text-acc [&.show]:block"></p>
-        <button data-auth-submit class="btn-keeper px-5 py-3.5 text-center">Patron sign-in</button>
-        <button data-auth-switch class="cursor-pointer text-center text-[13px] text-acc">Register new arms</button>
+        <p class="m-0 text-[13.5px] leading-[1.6] text-soft">
+          Sign in seamlessly using Conversora's centralized OAuth 2.1 zero-trust identity service with cryptographic RFC 9449 DPoP protection.
+        </p>
+
+        <button data-central-signin class="btn-keeper flex items-center justify-center gap-2 px-5 py-3.5 text-center">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Continue with Conversora ID</span>
+        </button>
+
+        <div class="flex items-center gap-3 py-1">
+          <span class="h-[1px] flex-1 bg-line"></span>
+          <span class="eti text-[10px] text-faint">Or 1-click social</span>
+          <span class="h-[1px] flex-1 bg-line"></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button data-social-signin="github" class="flex cursor-pointer items-center justify-center gap-2 border border-rule bg-transparent px-3 py-2.5 text-[12.5px] text-ink transition hover:border-acc">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            <span>GitHub</span>
+          </button>
+          <button data-social-signin="google" class="flex cursor-pointer items-center justify-center gap-2 border border-rule bg-transparent px-3 py-2.5 text-[12.5px] text-ink transition hover:border-acc">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Google</span>
+          </button>
+        </div>
+
         <div class="flex flex-col gap-3 border-t border-line pt-4">
-          <span class="eti text-faint">Or enter as an existing patron</span>
+          <span class="eti text-faint">Or preview as an existing house patron</span>
           <div data-quick-patrons class="flex flex-col gap-2.5"></div>
         </div>
       </div>
@@ -268,6 +279,7 @@ const clientData = JSON.stringify({
 
     <script>
       import { bag, vault, toggleIn, patron, currency, CURRENCIES, fmtMoney, type Currency } from '../lib/stores';
+      import { authClient } from '../lib/auth';
 
       const D = JSON.parse(document.body.dataset.maison!);
       const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
@@ -538,26 +550,21 @@ const clientData = JSON.stringify({
         { id: 'p2', name: 'Eleonora Stein', status: 'Master Guild', registry: 'Patron no. 0312', since: '2011' },
       ];
       (window as any).MAISON_PATRONS = PATRONS;
-      let authMode: 'signin' | 'register' = 'signin';
       const authModal = $('[data-auth-modal]');
       const openAuth = () => { closeAll(); authModal.classList.add('open'); paintAuth(); };
       (window as any).maisonOpenAuth = openAuth;
       $('[data-auth-btn]').addEventListener('click', openAuth);
       $('[data-auth-close]').addEventListener('click', () => authModal.classList.remove('open'));
       authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('open'); });
+
       function paintAuth() {
-        $('[data-auth-title]').textContent = authMode === 'signin' ? 'Patron sign-in' : 'Register new arms';
-        $('[data-auth-submit]').textContent = authMode === 'signin' ? 'Patron sign-in' : 'Register new arms';
-        $('[data-auth-switch]').textContent = authMode === 'signin' ? 'Register new arms' : 'Back to sign-in';
-        $('[data-auth-arms]').classList.toggle('show', authMode === 'register');
-        $('[data-auth-error]').classList.remove('show');
         $('[data-quick-patrons]').innerHTML = PATRONS.map((p) => `
           <button data-quick-patron="${p.id}" class="flex cursor-pointer flex-col gap-[3px] border border-line px-3.5 py-3 text-left transition hover:border-acc">
             <span class="font-sf text-[16px]">${p.name}</span>
             <span class="font-mono text-[10.5px] text-faint">${p.status} · ${p.registry}</span>
           </button>`).join('');
       }
-      $('[data-auth-switch]').addEventListener('click', () => { authMode = authMode === 'signin' ? 'register' : 'signin'; paintAuth(); });
+
       function signIn(session: any) {
         patron.set(session);
         authModal.classList.remove('open');
@@ -565,26 +572,40 @@ const clientData = JSON.stringify({
         toast(`Welcome, ${session.name.split(' ')[0]}`);
         location.href = '/account';
       }
-      $('[data-auth-submit]').addEventListener('click', () => {
-        const email = (document.querySelector('[data-af="email"]') as HTMLInputElement).value.trim();
-        const pass = (document.querySelector('[data-af="pass"]') as HTMLInputElement).value;
-        const err = $('[data-auth-error]');
-        if (!email.includes('@') || pass.length < 4) {
-          err.textContent = 'A registered address and a passphrase of four characters or more are required.';
-          err.classList.add('show');
-          return;
-        }
-        if (authMode === 'register') {
-          const arms = (document.querySelector('[data-af="arms"]') as HTMLInputElement).value.trim() || email.split('@')[0];
-          signIn({ id: 'p-' + Date.now(), name: arms, status: 'Registered Patron', registry: 'Patron no. ' + String(400 + Math.floor(Math.random() * 500)), since: 'this season' });
-        } else {
-          signIn({ ...PATRONS[0], name: email.split('@')[0].replace(/[._]/g, ' ') || PATRONS[0].name });
-        }
+
+      // Centralized Conversora OAuth 2.1 Sign-In Redirect with DPoP Key Binding
+      const centralBtn = $('[data-central-signin]');
+      if (centralBtn) {
+        centralBtn.addEventListener('click', async () => {
+          try {
+            const redirectUrl = await authClient.createAuthorizationUrl({ returnPath: window.location.pathname });
+            window.location.href = redirectUrl;
+          } catch (err: any) {
+            console.error('Failed to initiate central auth:', err);
+            toast('Auth Service Unavailable');
+          }
+        });
+      }
+
+      // Direct 1-Click Social Sign-In (GitHub, Google) via auth.conversora.io
+      document.querySelectorAll('[data-social-signin]').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          const provider = (e.currentTarget as HTMLElement).dataset.socialSignin;
+          if (!provider) return;
+          try {
+            const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
+            window.location.href = `https://auth.conversora.io/api/auth/sign-in/social?provider=${provider}&callbackURL=${callbackUrl}`;
+          } catch (err) {
+            console.error('Social sign-in error:', err);
+          }
+        });
       });
+
       authModal.addEventListener('click', (e) => {
         const b = (e.target as HTMLElement).closest<HTMLElement>('[data-quick-patron]');
         if (b) signIn(PATRONS.find((p) => p.id === b.dataset.quickPatron)!);
       });
+
       function paintPatron() {
         const p = patron.get();
         const link = $('[data-patron-link]');

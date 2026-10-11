@@ -41,6 +41,7 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     import { patron, vault, currency, packaging, notify, CURRENCIES, fmtMoney, type Currency } from '../lib/stores';
+    import { authClient } from '../lib/auth';
 
     const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
     const STEPS = ['Preparation', 'Hand-crafting', 'Inspection', 'Dispatched'];
@@ -191,11 +192,16 @@ import Layout from '../layouts/Layout.astro';
       }
     }
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
       const t = e.target as HTMLElement;
       const ct = t.closest<HTMLElement>('[data-cab-tab]');
       if (ct) { tab = ct.dataset.cabTab!; return render(); }
-      if (t.closest('[data-sign-out]')) { patron.set(null); location.href = '/'; return; }
+      if (t.closest('[data-sign-out]')) {
+        await authClient.signOut();
+        patron.set(null);
+        location.href = '/';
+        return;
+      }
       if (t.closest('[data-guest-auth]')) { (window as any).maisonOpenAuth?.(); return; }
       const sc = t.closest<HTMLElement>('[data-set-cur]');
       if (sc) { currency.set(sc.dataset.setCur as any); return render(); }

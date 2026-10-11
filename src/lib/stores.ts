@@ -21,11 +21,15 @@ export function toggleIn(store: typeof bag, handle: string): boolean {
 }
 
 export interface PatronSession {
-  id: string; // 'p1' | 'p2' | custom
+  id: string; // 'p1' | 'p2' | custom | user sub
   name: string;
   status: string;
   registry: string;
   since: string;
+  tier?: string;
+  emailMasked?: string;
+  tenantId?: string;
+  expiresAt?: number;
 }
 export const patron = persistentAtom<PatronSession | null>('njx-maison-patron', null, json);
 

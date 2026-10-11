@@ -1,0 +1,79 @@
+---
+// Maison Centralized OAuth 2.1 Callback Route
+// Exchanges OAuth 2.1 authorization code with auth.conversora.io using RFC 9449 DPoP
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Authenticating Patron — Maison Archive" description="Verifying patron credentials with Conversora Central Auth.">
+  <main class="mx-auto max-w-[600px] px-6 py-28 text-center">
+    <div data-auth-loading class="flex flex-col items-center gap-5">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-line border-t-acc"></div>
+      <div class="eti text-acc" style="letter-spacing:0.18em">Conversora Centralized Auth</div>
+      <h1 class="font-sf text-[28px]">Verifying patron credentials...</h1>
+      <p class="text-[14px] text-soft">Establishing cryptographic DPoP device proof and minting 30-day session token.</p>
+    </div>
+
+    <div data-auth-error class="hidden flex-col items-center gap-4 text-center">
+      <div class="eti text-red-500" style="letter-spacing:0.18em">Authentication Error</div>
+      <h1 class="font-sf text-[26px]">Unable to complete sign-in</h1>
+      <p data-error-msg class="text-[14px] text-soft">An error occurred during token verification.</p>
+      <a href="/" class="btn-keeper mt-4 inline-block px-6 py-3">Return to archive</a>
+    </div>
+  </main>
+
+  <script>
+    import { authClient } from '../../lib/auth';
+    import { patron, type PatronSession } from '../../lib/stores';
+
+    async function handleAuthCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const state = params.get('state');
+      const error = params.get('error') || params.get('error_description');
+
+      const loadingEl = document.querySelector('[data-auth-loading]') as HTMLElement;
+      const errorEl = document.querySelector('[data-auth-error]') as HTMLElement;
+      const errorMsgEl = document.querySelector('[data-error-msg]') as HTMLElement;
+
+      if (error) {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (errorEl) errorEl.classList.remove('hidden');
+        if (errorMsgEl) errorMsgEl.textContent = error;
+        return;
+      }
+
+      if (!code || !state) {
+        window.location.href = '/';
+        return;
+      }
+
+      try {
+        const session = await authClient.handleCallback(code, state);
+
+        const newPatron: PatronSession = {
+          id: session.user.id,
+          name: session.user.name,
+          status: session.user.tier === 'vip_gold' ? 'Grand Collector VIP' : 'Registered Patron',
+          registry: `Patron ID · ${session.user.id.slice(0, 10)}`,
+          since: 'Verified',
+          tier: session.user.tier,
+          emailMasked: session.user.emailMasked,
+          tenantId: session.user.tenantId,
+          expiresAt: session.expiresAt,
+        };
+
+        patron.set(newPatron);
+
+        // Redirect to account dashboard
+        window.location.href = '/account';
+      } catch (err: any) {
+        console.error('Authentication exchange error:', err);
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (errorEl) errorEl.classList.remove('hidden');
+        if (errorMsgEl) errorMsgEl.textContent = err?.message || 'Token exchange failed';
+      }
+    }
+
+    handleAuthCallback();
+  </script>
+</Layout>
