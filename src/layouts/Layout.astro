@@ -552,8 +552,17 @@ const clientData = JSON.stringify({
       (window as any).MAISON_PATRONS = PATRONS;
       const authModal = $('[data-auth-modal]');
       const openAuth = () => { closeAll(); authModal.classList.add('open'); paintAuth(); };
-      (window as any).maisonOpenAuth = openAuth;
-      $('[data-auth-btn]').addEventListener('click', openAuth);
+      function redirectToCentralAuth(provider?: string) {
+        const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
+        if (provider) {
+          window.location.href = `https://auth.conversora.io/api/auth/sign-in/social?provider=${provider}&callbackURL=${callbackUrl}`;
+        } else {
+          window.location.href = authClient.getSignInUrl({ storeName: 'Maison Archive' });
+        }
+      }
+
+      (window as any).maisonOpenAuth = () => redirectToCentralAuth();
+      $('[data-auth-btn]').addEventListener('click', () => redirectToCentralAuth());
       $('[data-auth-close]').addEventListener('click', () => authModal.classList.remove('open'));
       authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('open'); });
 
@@ -576,28 +585,14 @@ const clientData = JSON.stringify({
       // Centralized Conversora OAuth 2.1 Sign-In Redirect with DPoP Key Binding
       const centralBtn = $('[data-central-signin]');
       if (centralBtn) {
-        centralBtn.addEventListener('click', async () => {
-          try {
-            const redirectUrl = await authClient.createAuthorizationUrl({ returnPath: window.location.pathname });
-            window.location.href = redirectUrl;
-          } catch (err: any) {
-            console.error('Failed to initiate central auth:', err);
-            toast('Auth Service Unavailable');
-          }
-        });
+        centralBtn.addEventListener('click', () => redirectToCentralAuth());
       }
 
       // Direct 1-Click Social Sign-In (GitHub, Google) via auth.conversora.io
       document.querySelectorAll('[data-social-signin]').forEach((btn) => {
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', (e) => {
           const provider = (e.currentTarget as HTMLElement).dataset.socialSignin;
-          if (!provider) return;
-          try {
-            const callbackUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
-            window.location.href = `https://auth.conversora.io/api/auth/sign-in/social?provider=${provider}&callbackURL=${callbackUrl}`;
-          } catch (err) {
-            console.error('Social sign-in error:', err);
-          }
+          redirectToCentralAuth(provider);
         });
       });
 

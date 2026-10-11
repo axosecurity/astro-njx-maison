@@ -277,14 +277,24 @@ export class ConversoraAuthClient {
   }
 
   /**
-   * Exchanges an authorization code for a 30-day DPoP-bound JWT
+   * Returns the direct redirection URL to centralized auth.conversora.io/signin
    */
-  async handleCallback(code: string, state: string): Promise<StoredSession> {
-    // 1. Verify PKCE state from sessionStorage
+  getSignInUrl(options: { returnPath?: string; storeName?: string } = {}): string {
+    const callbackUrl = encodeURIComponent(this.redirectUri);
+    const store = encodeURIComponent(options.storeName || this.tenantId);
+    const origin = typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : '';
+    return `${this.authServerUrl}/signin?origin=${origin}&callbackURL=${callbackUrl}&store=${store}&tenantId=${this.tenantId}`;
+  }
+
+  /**
+   * Exchanges an authorization code or session token for a 30-day DPoP-bound JWT
+   */
+  async handleCallback(code: string, state?: string | null): Promise<StoredSession> {
+    // 1. Verify PKCE state from sessionStorage (if state provided)
     let codeVerifier = '';
     let returnPath = '/';
 
-    if (typeof sessionStorage !== 'undefined') {
+    if (state && typeof sessionStorage !== 'undefined') {
       const saved = sessionStorage.getItem(`conv_auth_pkce_${this.tenantId}`);
       if (saved) {
         try {
@@ -297,10 +307,12 @@ export class ConversoraAuthClient {
       }
     }
 
-    try {
-      const decodedState = JSON.parse(base64UrlDecodeToString(state));
-      returnPath = decodedState.returnPath || '/';
-    } catch {}
+    if (state) {
+      try {
+        const decodedState = JSON.parse(base64UrlDecodeToString(state));
+        returnPath = decodedState.returnPath || '/';
+      } catch {}
+    }
 
     const tokenUrl = `${this.authServerUrl}/oauth/token`;
     const dpopProof = await this.createDPoPProof('POST', tokenUrl);
@@ -310,8 +322,10 @@ export class ConversoraAuthClient {
       code,
       redirect_uri: this.redirectUri,
       client_id: this.tenantId,
-      code_verifier: codeVerifier,
     });
+    if (codeVerifier) {
+      bodyParams.set('code_verifier', codeVerifier);
+    }
 
     const response = await fetch(tokenUrl, {
       method: 'POST',
